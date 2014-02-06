@@ -19,10 +19,14 @@ This document is the starting point for creating software to interact with Anki 
 This information is intended for curious hackers, makers, and technology enthusiatists who enjoy voiding warranties as much as we do. We make no guarantees about the future compatibility of any of the information contained in this document. This is a living document that may change at any time and carries no warranties of any kind, either expressed or implied.
 
 <div class='row'>
-  <div class='sdk-home-links col-md-4'><a href='docs/programming-guide'><h3>Guide</h3></a></div>
-  <div class='sdk-home-links col-md-4'><a href='https://github.com/anki/drive-sdk/tree/master/examples'><h3>Examples</h3></a></div>
-  <div class='sdk-home-links col-md-4'><a href='https://github.com/anki/drive-sdk'><h3>Source Code</h3></a></div>
+  <div class='sdk-home-links col-md-3'><a href='docs/programming-guide'><h3>Guide</h3></a></div>
+  <div class='sdk-home-links col-md-3'><a href='https://github.com/anki/drive-sdk/tree/master/examples'><h3>Examples</h3></a></div>
+  <div class='sdk-home-links col-md-3'><a href='https://github.com/anki/drive-sdk'><h3>Source Code</h3></a></div>
+  <div class='sdk-home-links col-md-3'>
+    <a href='https://groups.google.com/a/anki.com/forum/#!forum/anki-dev/join'><h3>Mailing List</h3></a>
+  </div>
 </div>
+
 
 <br />
 <div class='divider'> </div>
