@@ -3,12 +3,15 @@ layout: page
 title: Anki Drive Programming Guide 
 tagline:
 ---
+  
 
-Overview
---------
+Programming Guide
+=================
+[SDK Home](http://developer.anki.com/drive-sdk/)
+  
 
 Bluetooth LE Core Concepts
-==========================
+--------------------------
 
 The Bluetooth 4.0 specification defines a wireless communication protocol for use with low energy devices.
 The protocol is conceptually similar to a client-server architecture, in which a client device (central) can connect to and communicate with a server device (peripheral).
@@ -23,7 +26,7 @@ Once connected, a central device can communicate with vehicles using the Anki Dr
 [bt-core-4]: https://www.bluetooth.org/docman/handlers/downloaddoc.ashx?doc_id=229737
 
 Discovering Vehicles
-====================
+--------------------
 
 Vehicles broadcast identifying information and service definitions in the form of advertising packets.
 An advertising packet contains binary data in a parsable format defined by a generic attribute profile (GATT).
@@ -140,7 +143,7 @@ typedef struct anki_vehicle_adv_state {
 
 
 Connecting to Vehicles
-======================
+----------------------
 
 In order to establish a Bluetooth LE connection with a vehicle, the device address or a unique hardware identifier must be known.
 On Linux, Android or other platforms using [BlueZ][], the device address is exposed via the API during the scanning process.
@@ -216,7 +219,7 @@ However, our empirical evidence on iOS suggests that the connection procedure is
 
 
 Vehicle Message Protocol 
-========================
+------------------------
 
 Vehicle messages are short, structured sequences of bytes that can represent driving commands, queries about the vehicle state, or convey specific vehicle states or conditions.
 
@@ -335,7 +338,8 @@ For more examples of how to use these functions and send data, see the [vehicle-
 [protocol_h]: https://github.com/anki/drive-sdk/blob/master/include/ankidrive/protocol.h
 [vehicle-tool-cmd]: https://github.com/anki/drive-sdk/blob/master/examples/vehicle-tool/vehicle_cmd.c#L471
 
+
 Revision History
-================
+----------------
 
 2014-01-23  Initial version.

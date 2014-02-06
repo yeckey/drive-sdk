@@ -13,8 +13,15 @@
 
 }
 
-
-
-
-
+/*
+  Need to test on IE
+h2 {
+  background-image: url(/assets/anki/code.gif);
+  background-repeat: repeat-x;
+  background-size: auto 10px;
+  margin-bottom: 50px;
+  background-position-y: 0px;
+  padding-top: 20px;
+}
+*/
 
