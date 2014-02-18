@@ -328,7 +328,7 @@ The procedure for creating a message to set the vehicle speed is similar.
 
 ~~~c
 anki_vehicle_msg_t msg;
-memset(&msg, 0, sizeof(anki_vehicle_msg_t));
+memset(&msg, 0, sizeof(msg));
 uint8_t size = anki_vehicle_msg_set_speed(&msg, 1000, 25000);
 ~~~
 
