@@ -30,15 +30,16 @@ Discovering Vehicles
 
 Vehicles broadcast identifying information and service definitions in the form of advertising packets.
 An advertising packet contains binary data in a parsable format defined by a generic attribute profile (GATT).
-Depending on the API implemented on the central, this information may be exposed in different ways.
+Depending on the bluetooth API available on the central, this information may be exposed in different ways.
 On iOS, [CoreBluetooth][] parses this data internally and provides an NSDictionary containing the profile data.
-On Linux and Android, the raw scan bytes are exposed via the API, and must be parsed to obtain the GATT profile data members of interest.
+On Linux and Android, the raw scan bytes are exposed via the bluetooth API ([BlueZ][], Linux; [android.bluetooth][AndroidBluetooth], Android) and must be parsed to obtain the GATT profile data members of interest.
 
 [CoreBluetooth]: https://developer.apple.com/library/ios/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/AboutCoreBluetooth/Introduction.html
+[AndroidBluetooth]: http://developer.android.com/guide/topics/connectivity/bluetooth-le.html
 
 ### Parsing Advertising Packet data
 
-If raw scan data from the Extended Inquery Response (EIR) is available, it needs to be parsed to obtain the LOCAL_NAME
+If raw scan data from the Extended Inquiry Response (EIR) is available, it needs to be parsed to obtain the LOCAL_NAME
 and MANUFACTURER_DATA. These records types are defined as part of the [GATT profile specification][gatt-spec].
 The Anki Drive SDK provides [methods][sdk-parsing] to parse EIR data into records and to 
 extract vehicle information from specific types of records.
@@ -49,14 +50,13 @@ extract vehicle information from specific types of records.
 
 ### Advertisement Data Format
 
-Each vehicle has a unique identifier, which is available in the manufacturer data member (0xff) of the advertising packet.
-Vehicle advertisements consist of the Drive service UUID, along with a unique identifier, name and state information.
+Vehicle advertisements consist of the Anki Drive service UUID (`service_id`), along with a unique identifier (`mfg_data`), name and state information (`local_name`).
 
 ~~~c
 /**
  * Vehicle information present in Bluetooth LE advertising packets.
  *
- * flags: EIR / AD flags
+ * flags: EIR flags
  * tx_power: transmission power
  * mfg_data: parsed data from the MANUFACTURER_DATA bytes
  * local_name: parsed data from the LOCAL_NAME string bytes
@@ -71,15 +71,15 @@ typedef struct anki_vehicle_adv {
 } anki_vehicle_adv_t;
 ~~~
 
-The `service_id` for an Anki Drive vehicle is defined in the GATT profile for the vehicle, and will always by a 128-bit UUID.
+The `service_id` for an Anki Drive vehicle is defined in the GATT profile for the vehicle, and will always be the same 128-bit UUID.
 This UUID can be used to identify vehicles during scanning, or as a handle to discover the read and write characteristics after connecting to a vehicle.
 
 ~~~c
 #define ANKI_STR_SERVICE_UUID       "BE15BEEF-6186-407E-8381-0BD89C4D8DF4"
 ~~~
 
-The manufacturer data contains a uint64_t value that uniquely identifies each vehicle.
-This value contains information identifying the 'make/model' of the car, which can be used for display purposes.
+The manufacturer data is a uint64_t value that uniquely identifies each vehicle.
+This value specifies the 'make/model' of the vehicle (`model_id`) and a unique identifier for each vehicle of the specified model (`identifier`).
 
 ~~~c
 /**
@@ -98,14 +98,14 @@ typedef struct anki_vehicle_adv_mfg {
 } anki_vehicle_adv_mfg_t;
 ~~~
 
-The LOCAL_NAME field contains information about the vehicle state in addition to a
-user-defined vehicle name.
-The bytes are intended to be a displayable string and must be a valid UTF-8 sequence.
-However, to support gameplay aspects of the Anki Drive app, vehicles store additional state information in the LOCAL_NAME that should be interpreted as text. 
-The LOCAL_NAME of a vehicle names will always contain at least the first state byte,
-but all other information is optional.
+The Bluetooth 4.0 specification requires that the LOCAL_NAME field be a UTF-8 encoded string of up to 248 bytes, with shorter values terminated by a NULL (0x0) byte ([Bluetooth 4.0, Part C, 3.2.2.3, 12.1][bt-core-4]).
+However, Bluetooth LE devices may only advertise up to 20 bytes of the LOCAL NAME data ([Bluetooth 4.0, Part C, 11.1.2][bt-core-4]).
+To ensure that the entire LOCAL_NAME is available during advertising, Anki Drive vehicles only use up to 20 bytes of LOCAL NAME data.
+
+The LOCAL_NAME advertised by Anki Drive vehicles consists of the vehicle state (`state`), firmware version (`version`) and a user-defined vehicle name (`name`).
+The vehicle state and firmware version will always be non-null values in the ASCII range from (0x01 -- 0x7f). However, the remaining data could be NULL, which would still satisfy the requirement for a UTF-8 encoded string.
 This should be accounted for when [parsing the data][sdk-parsing].
-As a result of this strategy, the LOCAL_NAME data of a vehicle may change during repeated advertisements if, for example, a car is removed from a charger.
+This strategy of including additional information in the LOCAL NAME field enhances the user interface experience in the Anki Drive app, but may result in the LOCAL_NAME data changing during repeated advertisements if, for example, a vehicle is removed from a charger.
 
 ~~~c
 /**
@@ -146,7 +146,7 @@ Connecting to Vehicles
 ----------------------
 
 In order to establish a Bluetooth LE connection with a vehicle, the device address or a unique hardware identifier must be known.
-On Linux, Android or other platforms using [BlueZ][], the device address is exposed via the API during the scanning process.
+On Android, or Linux and other platforms using [BlueZ][], the device address is exposed during the scanning process.
 On Apple platforms, CoreBluetooth hides the device address and instead provides a unique identifier (UUID) that identifies each peripheral.
 The identifiers can be associated with vehicle data obtained during scanning and stored for later use in connecting to vehicles without re-scanning peripherals.
 
@@ -263,8 +263,8 @@ typedef struct anki_vehicle_msg {
 
 ### Message Types
 
-Each message or command is identifier by a unique 1-byte identifier.
-This value identifies the command that the vehicle should perform and is also used to determine whether addition data parameters are required. 
+Each message or command is identified by a unique 1-byte identifier.
+This value identifies the command that the vehicle should perform and is also used to determine whether additional data parameters are required. 
 Because message identifiers are shared with code running on the vehicle, they are inherently linked to the firmware version running on the vehicle.
 Although we do not expect these to change frequently, any changes that do occur in the future may break compatibility with pre-1.0 releases of the SDK.
 
@@ -302,8 +302,8 @@ enum {
 
 ### Messages with parameters
 
-Some messages require addition data parameters.
-The required parameters are for each message are defined as packed structs for clarity and convenience.
+Some messages require additional data parameters.
+The required parameters for each message are defined as packed structs for clarity and convenience.
 In addition, each type of message has a corresponding function that fills in a generic `anki_vehicle_msg_t` struct parameter.
 These methods allow callers to control memory allocation, but provide an abstracted way to generate messages with multiple parameters.
 
@@ -314,7 +314,7 @@ Anki Drive vehicles have a special mode that allows the commands listed above to
 
 ~~~c
 anki_vehicle_msg_t msg;
-memset(&msg, 0, sizeof(anki_vehicle_msg_t));
+memset(&msg, 0, sizeof(msg));
 uint8_t size = anki_vehicle_msg_set_sdk_mode(&msg, 1);
 ~~~
 
