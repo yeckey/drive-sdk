@@ -7,7 +7,7 @@ tagline:
 
 <br />
 
-<h1>Anki Drive SDK 0.1 Beta</h1>
+<h1>Anki Drive SDK</h1>
 <br />
 
 ## Introduction
