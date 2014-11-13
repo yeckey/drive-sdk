@@ -315,11 +315,11 @@ Anki Drive vehicles have a special mode that allows the commands listed above to
 ~~~c
 anki_vehicle_msg_t msg;
 memset(&msg, 0, sizeof(msg));
-uint8_t size = anki_vehicle_msg_set_sdk_mode(&msg, 1);
+uint8_t size = anki_vehicle_msg_set_sdk_mode(&msg, 1, ANKI_VEHICLE_SDK_OPTION_OVERRIDE_LOCALIZATION);
 ~~~
 
-In this example `anki_vehicle_msg_set_sdk_mode` writes `{ 0x02, 0x90, 0x01 }` to `msg` and returns 3.
-Both the buffer and size, should be passed to a function that sends 3 bytes from the buffer to vehicle.
+In this example `anki_vehicle_msg_set_sdk_mode` writes `{ 0x03, 0x90, 0x01, 0x01 }` to `msg` and returns 4.
+Both the buffer and size, should be passed to a function that sends 4 bytes from the buffer to vehicle.
 
 
 ### Set vehicle speed
